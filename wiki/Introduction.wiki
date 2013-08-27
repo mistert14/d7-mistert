@@ -1,7 +1,7 @@
 #summary Introduction
 
 = Introduction =
-You can download all files from SVN
+You can download all files from [https://code.google.com/p/d7-mistert/source/browse/ svn]
 
 SimulAuto is the main file.
 Note that you need a flash player intalled for animations reading.
