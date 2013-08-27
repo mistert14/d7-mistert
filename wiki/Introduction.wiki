@@ -1,0 +1,12 @@
+#summary Introduction
+
+= Introduction =
+You can downlaod all files from SVN
+
+SimulAuto.exe is the main file.
+Note that you need a flash player intalled for animations reading.
+
+https://d7-mistert.googlecode.com/svn/trunk/SimulAuto.exe
+
+
+= Details =
