@@ -6,7 +6,7 @@ You can download all files from SVN
 SimulAuto is the main file.
 Note that you need a flash player intalled for animations reading.
 
-Main file: https://d7-mistert.googlecode.com/svn/trunk/SimulAuto.exe
+[https://d7-mistert.googlecode.com/svn/trunk/SimulAuto.exe Main file]
 
 [https://code.google.com/p/d7-mistert/source/browse/#svn%2Ftrunk%2FGPH Examples and animations] 
 
