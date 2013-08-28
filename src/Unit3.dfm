@@ -69,7 +69,6 @@ object Form3: TForm3
     Top = 320
     Width = 57
     Height = 21
-    Enabled = False
     TabOrder = 4
   end
   object Timer1: TTimer
