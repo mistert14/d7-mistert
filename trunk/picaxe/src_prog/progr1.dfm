@@ -1,4 +1,4 @@
-object Form1: TForm1
+object frmProg: TfrmProg
   Left = 198
   Top = 124
   Width = 366

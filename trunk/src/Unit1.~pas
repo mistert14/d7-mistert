@@ -116,25 +116,10 @@ implementation
 
 uses Unit2, Unit3, unit4, progr1;
 {$R *.dfm}
-function Split(chaine : String; delimiteur : string) : TStringList;
-var
-L : TStringList;
-begin
-  L:=TStringList.create;
-  L.text := StringReplace(chaine, delimiteur, #13#10, [rfReplaceAll]);
-  Split:=L;
-end;
-
-
 function Tform1.clean_instr(instr:string):string;
 var s:string;
-    ar:Tstringlist;
 begin
    s:=instr;
-   if (pos('and',s)<>0) and (pos('or',s)<> 0) then begin
-        //instr complexe à scinder
-        ar:=split(s,'or');
-   end;
    result:=s;
 end;
 procedure Tform1.gerer_ordres();
@@ -771,7 +756,6 @@ for i:=0 to step_count-1 do begin
   memo1.lines.Add('          goto etape'+inttostr(i));
 end;
 frmProg.SynMemo1.Text:=self.memo1.Text;
-Gnrerunfichierbasic1Click(sender);
 end;
 
 end.

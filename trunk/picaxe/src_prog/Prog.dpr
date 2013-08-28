@@ -2,13 +2,13 @@ program Prog;
 
 uses
   Forms,
-  progr1 in 'progr1.pas' {Form1},
+  progr1 in 'progr1.pas' {frmProg},
   epcWindows in 'epcWindows.pas';
 
 {$R *.res}
 
 begin
   Application.Initialize;
-  Application.CreateForm(TForm1, Form1);
+  Application.CreateForm(TfrmProg, frmProg);
   Application.Run;
 end.
