@@ -59,17 +59,4 @@ object Form1: TForm1
     Caption = 'Utiliser ce port'
     TabOrder = 3
   end
-  object ComPort1: TComPort
-    Port = 'COM1'
-    Baud = 9600
-    DataBits = 8
-    Parity = ptNONE
-    StopBits = sbONE
-    WinQSizeIn = 8192
-    WinQSizeOut = 8192
-    ReceiveMode = rmTERM
-    Terminator = '#13#10'
-    Left = 264
-    Top = 240
-  end
 end

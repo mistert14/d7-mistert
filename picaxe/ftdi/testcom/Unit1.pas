@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Registry, ComPort;
+  Dialogs, StdCtrls, Registry;
 
 type
   TForm1 = class(TForm)
@@ -12,7 +12,6 @@ type
     Memo2: TMemo;
     ListBox1: TListBox;
     Button2: TButton;
-    ComPort1: TComPort;
     procedure Button1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
@@ -65,7 +64,7 @@ end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-//self.Button1Click(self);
+self.Button1Click(self);
 end;
 
 end.

@@ -2,8 +2,7 @@ program testcom;
 
 uses
   Forms,
-  Unit1 in 'Unit1.pas' {Form1},
-  WbemScripting_TLB in 'C:\Program Files (x86)\Borland\Delphi7\Imports\WbemScripting_TLB.pas';
+  Unit1 in 'Unit1.pas' {Form1};
 
 {$R *.res}
 
