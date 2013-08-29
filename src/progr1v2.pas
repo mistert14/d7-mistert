@@ -1,4 +1,4 @@
-unit progr1;
+unit progr1v2;
 
 interface
 
@@ -31,7 +31,7 @@ var
 
 implementation
 
-uses Unit1;
+uses Unit1v2;
 
 {$R *.dfm}
 
