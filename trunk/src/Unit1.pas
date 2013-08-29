@@ -84,10 +84,11 @@ type
     { Déclarations privées }
 
     mini,maxi,frame:integer;
-    tempo:int64;
+    //tempo:int64;
     dico:TableauAssociatif;
     filename:string;
     ordres:array[0..50] of string;
+    tempo:array[0..50] of longint;//compte en ms
     step_count:integer;
     comp_count:integer;
     debut,fin,deltaX,deltaY:integer;
@@ -506,7 +507,7 @@ begin
 
 self.Stopper1Click(self);
 self.frame:=0;
-self.tempo:=0;
+
 memo1.lines.clear;
 if step_count=0 then exit;
 for i:=0 to step_count do
@@ -525,7 +526,7 @@ var i,j:integer;
 begin
 self.flash1.GotoFrame(0);
 timer1.Enabled:=false;
-for i:=0 to max do etapes_actives[i]:=-1;
+for i:=0 to max do begin etapes_actives[i]:=-1; self.tempo[i]:=0;  end;
 
 for i:=0 to step_count-1 do (self.Components[self.comp_count+i] as Tmemo).Color:=clYellow;
 
@@ -540,7 +541,7 @@ procedure TForm1.Timer1Timer(Sender: TObject);
 var cond:string;
     i,j,k,kk:integer;
 begin
-    inc(self.tempo);
+
     for i:=0 to step_count do begin
        if etapes_actives[i]=1 then for j:=0 to step_count do begin
           cond:=liens[i,j];
@@ -572,10 +573,11 @@ begin
               etapes_actives[i] := -1;
               (self.Components[self.comp_count+i] as Tmemo).Color:=clYellow;
               self.ordres[i]:='';
+              self.tempo[i]:=0;
 
               etapes_actives[j] := 1;
               (self.Components[self.comp_count+j] as Tmemo).Color:=TColor($3378E4);
-
+              self.tempo[j]:=0;
               self.ordres[j]:=(self.Components[self.comp_count+j] as Tmemo).Text;
               //memo1.lines.Add('unset '+inttostr(i)+' set '+inttostr(j)+' '+self.ordres[j]);
 
@@ -584,6 +586,7 @@ begin
 
        end; //if
        gerer_ordres();
+       self.tempo[i]:=self.tempo[i]+self.Timer1.Interval;
     end;//for
 end;
 
@@ -751,26 +754,26 @@ var i,j:integer;
 ordre:string;
 begin
 if self.step_count=0 then exit;
-memo1.clear;
+frmProg.SynMemo1.Clear;
 //lister les entrees <>
 //lister les sorties <>
 //affecter si possible les pins  aux entrees sorties
 //proposer le prog
 for i:=0 to step_count-1 do begin
-  memo1.lines.Add('clear'+inttostr(i)+':   let pinsB=%00000000');
+  frmProg.SynMemo1.lines.Add('clear'+inttostr(i)+':   let pinsB=%00000000');
   ordre:=Tmemo(self.Components[self.comp_count+i]).Text;
-  memo1.lines.Add('etape'+inttostr(i)+':   '+self.traduit(ordre,'ordre'));
-  memo1.lines.add('          pause 100');
+  frmProg.SynMemo1.lines.Add('etape'+inttostr(i)+':   '+self.traduit(ordre,'ordre'));
+  frmProg.SynMemo1.lines.add('          pause 100');
   for j:=0 to step_count-1 do
   begin
     if (i=j) then continue;
     if self.liens[i,j] <> '-1' then begin
-       memo1.lines.Add(self.clean_instr('          if '+self.traduit(liens[i,j],'cond')+' then goto clear'+inttostr(j)));
+       frmProg.SynMemo1.lines.Add(self.clean_instr('          if '+self.traduit(liens[i,j],'cond')+' then goto clear'+inttostr(j)));
     end;
   end;
-  memo1.lines.Add('          goto etape'+inttostr(i));
+  frmProg.SynMemo1.lines.Add('          goto etape'+inttostr(i));
 end;
-frmProg.SynMemo1.Text:=self.memo1.Text;
+//frmProg.SynMemo1.Text:=self.memo1.Text;
 Gnrerunfichierbasic1Click(sender);
 end;
 

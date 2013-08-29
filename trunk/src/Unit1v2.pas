@@ -1,11 +1,11 @@
-unit Unit1;
+unit Unit1v2;
 
 interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Menus, StdCtrls, ExtCtrls, OleCtrls, ShockwaveFlashObjects_TLB, tabassoc,
-  ComCtrls;
+  ComCtrls, CPort;
 const
    max=50;
    max_char=72;
@@ -50,6 +50,9 @@ type
     Gnrerunfichierbasic1: TMenuItem;
     ChoisirlePICAXEcible1: TMenuItem;
     ConstruireunfichierbasicPICAXE1: TMenuItem;
+    ComPort1: TComPort;
+    Timer3: TTimer;
+    Memo2: TMemo;
     procedure Quitter1Click(Sender: TObject);
     procedure Ajoutertape1Click(Sender: TObject);
     procedure etapeMouseDown(Sender: TObject; Button: TMouseButton;
@@ -78,22 +81,26 @@ type
       args: WideString);
     procedure DetecterleportassociaucableAXE0271Click(Sender: TObject);
     procedure DtecterlecbleUSBPICAXE1Click(Sender: TObject);
-    procedure Gnrerunfichierbasic1Click(Sender: TObject);
     procedure ConstruireunfichierbasicPICAXE1Click(Sender: TObject);
+    procedure Gnrerunfichierbasic1Click(Sender: TObject);
+    procedure ComPort1RxChar(Sender: TObject; Count: Integer);
+    procedure Timer3Timer(Sender: TObject);
   private
     { Déclarations privées }
-
+    input,output:word;
+    pilotage:boolean;
     mini,maxi,frame:integer;
-    tempo:int64;
+    //tempo:int64;
     dico:TableauAssociatif;
     filename:string;
     ordres:array[0..50] of string;
+    tempo:array[0..50] of longint;//compte en ms
     step_count:integer;
     comp_count:integer;
     debut,fin,deltaX,deltaY:integer;
     liens, receptivites:array[0..max,0..max] of string;
     etapes_actives:array[0..max] of integer;
-    procedure gerer_ordres();
+    procedure gerer_ordres(var cmd:string);
     procedure clean;
     procedure redraw;
     function equations(eq:string):string;
@@ -114,7 +121,7 @@ var
 
 implementation
 
-uses Unit2, Unit3, unit4, progr1;
+uses Unit2v2, Unit3v2, unit4v2, progr1v2;
 {$R *.dfm}
 function Split(chaine : String; delimiteur : string) : TStringList;
 var
@@ -137,19 +144,20 @@ begin
    end;
    result:=s;
 end;
-procedure Tform1.gerer_ordres();
+procedure Tform1.gerer_ordres(var cmd:string);
 var i,j:integer;
-    cmd:string;
     delta:integer;
 begin
 if flash='' then exit;
+
+
+
 //modume simple allumage
 
 if pos('FEUX1',uppercase(flash)) <> 0  then begin
 self.flash1.Loop:=true;
 self.flash1.Play;
-for i:=0 to step_count do begin
-cmd:=trim(uppercase(self.ordres[i]));
+cmd:=trim(uppercase(cmd));
 if pos('F1V',cmd) <> 0 then self.flash1.SetVariable('Feu1','V');
 if pos('F1R',cmd) <> 0 then self.flash1.SetVariable('Feu1','R');
 if pos('F10',cmd) <> 0 then self.flash1.SetVariable('Feu1','O');
@@ -161,13 +169,12 @@ if pos('F3R',cmd) <> 0 then self.flash1.SetVariable('Feu3','R');
 if pos('F30',cmd) <> 0 then self.flash1.SetVariable('Feu3','O');
 //flash1.GotoFrame(1);
 //flash1.GotoFrame(0);
-end;
 exit;
 end;
 
 if pos('VA_ET_VIENT',uppercase(flash)) <> 0  then begin
 self.flash1.Loop:=true;
-for i:=0 to step_count do begin
+
 
 if dico.EstPresent('inter1') then begin self.flash1.SetVariable('Inter1',dico['inter1']); self.flash1.Play;  end;
 if dico.EstPresent('inter0') then begin self.flash1.SetVariable('Inter0',dico['inter0']); self.flash1.Play;  end;
@@ -181,29 +188,41 @@ dico['inter0']:='0';
 dico['inter1']:='0';
 end;
 
-cmd:=trim(uppercase(self.ordres[i]));
-if (cmd='') then continue;
+cmd:=trim(uppercase(cmd));
+if (cmd='') then exit;
 self.flash1.SetVariable('Lampe','0');
 self.flash1.Play;
 if pos('ALLUMER',cmd) <> 0 then begin self.flash1.setVariable('Lampe','1'); self.flash1.Play;  end;
 if pos('ETEINDRE',cmd) <> 0 then begin self.flash1.setVariable('Lampe','0'); self.flash1.Play; end;
-end;
+
 exit;
 end;
 
 if pos('FONCTION',uppercase(flash)) <> 0  then begin
-self.flash1.Loop:=true;
-for i:=0 to step_count do begin
-if dico.EstPresent('inter') then begin self.flash1.SetVariable('Inter',dico['inter']); self.flash1.Play;  end;
-cmd:=trim(uppercase(self.ordres[i]));
-if (cmd='') then continue;
-self.flash1.SetVariable('Lampe','0');
-self.flash1.Play;
-if pos('ALLUMER',cmd) <> 0 then begin self.flash1.setVariable('Lampe','1'); self.flash1.Play;  end;
-if pos('ETEINDRE',cmd) <> 0 then begin self.flash1.setVariable('Lampe','0'); self.flash1.Play; end;
-end;
 
-exit;
+   self.flash1.Loop:=true;
+
+      if dico.EstPresent('inter') then begin self.flash1.SetVariable('Inter',dico['inter']); self.flash1.Play;  end;
+      cmd:=trim(uppercase(cmd));
+
+      if (cmd='') then exit;
+      self.flash1.SetVariable('Lampe','0');
+      self.flash1.Play;
+      if pos('ALLUMER',cmd) <> 0 then begin
+         self.flash1.setVariable('Lampe','1');
+         self.flash1.Play;
+
+         if (self.pilotage=true) then self.output:=self.output or $01;
+
+
+      end else begin
+            self.flash1.setVariable('Lampe','0');
+            self.flash1.Play;
+            if (self.pilotage=true) then self.output:=self.output and $FE;
+
+         end;
+
+   exit;
 end;
 //module ascenseur
   if pos('ASCENSEUR',uppercase(flash)) <> 0  then begin
@@ -265,6 +284,7 @@ end;
 
 function Tform1.traduit(instr:string;mode:string='cond'):string;
 var s:string;
+ordre:longword;
 begin
 s:=uppercase(instr);
 
@@ -281,22 +301,42 @@ result:=s;
 exit;
 end;
 
-if (mode='ordre') then begin
-if pos('ALLUMER',s) <>0 then  begin result:='high B.0'; exit; end;
-if pos('ETEINDRE',s) <>0 then begin result:='low B.0'; exit; end;
-result:=';';
+ordre:=0;
+if ((mode='ordre') and self.pilotage=true) then begin
+  if pos('ALLUMER',s) <>0 then  ordre:= ordre and $01;
+  self.ComPort1.WriteStr(inttostr(ordre));
+  result:='1';
 end;
 
 end;
 
 function Tform1.equations(eq:string):string;
-var s,add:string;
+var inp,s,add:string;
 kk:integer;
 begin
 
 
 
     s := Trim(eq);
+
+    if self.pilotage=true then
+    begin
+    
+    for kk:=0 to dico.keys.Count-1 do begin
+       if (dico.keys[kk]='inter') and (self.input and 2 = 2) then inp:='1' else inp:='0';
+       if (dico.keys[kk]='inter1') and (self.input and 64 = 64) then inp:='1' else inp:='0';
+       if (dico.keys[kk]='inter2') and (self.input and 2 = 2) then inp:='1' else inp:='0';
+
+       if pos(dico.Keys[kk],s)<>0  then begin
+           s  := Trim(StringReplace(s,dico.Keys[kk],inp, [rfReplaceAll, rfIgnoreCase]));
+           memo1.Lines.add(dico.Keys[kk]+'='+inp);
+       end;
+    end;
+    end
+
+    else
+
+    begin
 
     for kk:=0 to dico.keys.Count-1 do begin
        if pos(dico.Keys[kk],s)<>0  then s  := Trim(StringReplace(s,dico.Keys[kk],trim(dico[dico.Keys[kk]]) , [rfReplaceAll, rfIgnoreCase]));
@@ -306,6 +346,10 @@ begin
     begin
     if Tcheckbox(FindComponent('chk'+chr(kk))).Checked then add:='1' else add:='0';
     s  := Trim(StringReplace(s,Chr(kk), add, [rfReplaceAll, rfIgnoreCase]));
+    end;
+
+    end;
+
     s  := Trim(StringReplace(s,'/0', '1', [rfReplaceAll, rfIgnoreCase]));
     s  := Trim(StringReplace(s,'/1', '0', [rfReplaceAll, rfIgnoreCase]));
     s  := Trim(StringReplace(s,'0.0', '0', [rfReplaceAll, rfIgnoreCase]));
@@ -320,7 +364,7 @@ begin
     s  := Trim(StringReplace(s,'0~1', '1', [rfReplaceAll, rfIgnoreCase]));
     s  := Trim(StringReplace(s,'1~0', '1', [rfReplaceAll, rfIgnoreCase]));
     s  := Trim(StringReplace(s,'1~1', '0', [rfReplaceAll, rfIgnoreCase]));
-    end;
+
     equations:=s;
 end;
 procedure Tform1.redraw;
@@ -440,6 +484,7 @@ end;
 procedure TForm1.FormCreate(Sender: TObject);
 var i,j:integer;
 begin
+self.pilotage:=false;
 form1.picaxe:='18m2';
 self.comp_count:=self.ComponentCount;
 for i:=0 to self.comp_count do
@@ -503,10 +548,10 @@ end;
 procedure TForm1.Dmarrer1Click(Sender: TObject);
 var i,j:integer;
 begin
-
+self.pilotage:=false;
 self.Stopper1Click(self);
 self.frame:=0;
-self.tempo:=0;
+
 memo1.lines.clear;
 if step_count=0 then exit;
 for i:=0 to step_count do
@@ -525,7 +570,7 @@ var i,j:integer;
 begin
 self.flash1.GotoFrame(0);
 timer1.Enabled:=false;
-for i:=0 to max do etapes_actives[i]:=-1;
+for i:=0 to max do begin etapes_actives[i]:=-1; self.tempo[i]:=0;  end;
 
 for i:=0 to step_count-1 do (self.Components[self.comp_count+i] as Tmemo).Color:=clYellow;
 
@@ -537,10 +582,10 @@ end;
 
 procedure TForm1.Timer1Timer(Sender: TObject);
 
-var cond:string;
+var cond,ord:string;
     i,j,k,kk:integer;
 begin
-    inc(self.tempo);
+
     for i:=0 to step_count do begin
        if etapes_actives[i]=1 then for j:=0 to step_count do begin
           cond:=liens[i,j];
@@ -553,6 +598,7 @@ begin
              If (cond = Chr(k)) Then if Tcheckbox(FindComponent('chk'+chr(k))).Checked  Then receptivites[i, j] := '1' Else receptivites[i, j] := '-1';
              //If (cond = '/'+Chr(k)) Then if Tcheckbox(FindComponent('chk'+chr(k))).Checked  Then receptivites[i, j] := '-1' Else receptivites[i, j] := '1';
              If (Pos('/', cond)<>0) or (Pos('+', cond)<>0) or (Pos('~', cond)<>0) or (Pos('.', cond)<>0) then receptivites[i, j]:=equations(cond);
+
 
              for kk:=0 to dico.keys.Count-1 do begin
                  if pos(dico.Keys[kk],cond)<>0  then receptivites[i, j]:=equations(cond);
@@ -572,18 +618,21 @@ begin
               etapes_actives[i] := -1;
               (self.Components[self.comp_count+i] as Tmemo).Color:=clYellow;
               self.ordres[i]:='';
+              self.tempo[i]:=0;
 
               etapes_actives[j] := 1;
               (self.Components[self.comp_count+j] as Tmemo).Color:=TColor($3378E4);
-
-              self.ordres[j]:=(self.Components[self.comp_count+j] as Tmemo).Text;
+              self.tempo[j]:=0;
+              ord:=Tmemo(self.Components[self.comp_count+j]).Text;
+              gerer_ordres(ord);
               //memo1.lines.Add('unset '+inttostr(i)+' set '+inttostr(j)+' '+self.ordres[j]);
 
 
 
 
        end; //if
-       gerer_ordres();
+       //gerer_ordres();
+       self.tempo[i]:=self.tempo[i]+self.Timer1.Interval;
     end;//for
 end;
 
@@ -737,41 +786,57 @@ form4.Timer1.Enabled:=true;
 form4.show;
 end;
 
+procedure TForm1.ConstruireunfichierbasicPICAXE1Click(Sender: TObject);
+begin
+if self.com_port='' then begin
+ ShowMessage('Le port COM n''estpas encore paramétré, vous pouvez le faire dans le menu paramètres');
+ exit;
+end;
+try
+     form1.ComPort1.Open;
+except
+     on E : Exception do
+      ShowMessage(E.ClassName+' une erreur s''est produite avec le message : '+E.Message);
+end;
+
+self.Timer3.Enabled:=true;
+self.Dmarrer1Click(self);
+self.pilotage:=true;
+//self.ComPort1.WriteStr('1'+#13#10);
+end;
+
 procedure TForm1.Gnrerunfichierbasic1Click(Sender: TObject);
 begin
-if self.step_count=0 then exit;
-frmProg.show;
+self.Timer3.Enabled:=false;
+self.Stopper1Click(self);
+self.ComPort1.WriteStr('0'+#13#10);
+self.pilotage:=false;
+self.output:=0;
+self.input:=0;
+try
+     form1.ComPort1.Close;
+   except
+     on E : Exception do
+      ShowMessage(E.ClassName+' une erreur s''est produite avec le message : '+E.Message);
+   end;
 end;
 
-procedure TForm1.ConstruireunfichierbasicPICAXE1Click(Sender: TObject);
-
-const max_input=5;
-const max_output=8;
-var i,j:integer;
-ordre:string;
+procedure TForm1.ComPort1RxChar(Sender: TObject; Count: Integer);
+var str:string;
 begin
-if self.step_count=0 then exit;
-memo1.clear;
-//lister les entrees <>
-//lister les sorties <>
-//affecter si possible les pins  aux entrees sorties
-//proposer le prog
-for i:=0 to step_count-1 do begin
-  memo1.lines.Add('clear'+inttostr(i)+':   let pinsB=%00000000');
-  ordre:=Tmemo(self.Components[self.comp_count+i]).Text;
-  memo1.lines.Add('etape'+inttostr(i)+':   '+self.traduit(ordre,'ordre'));
-  memo1.lines.add('          pause 100');
-  for j:=0 to step_count-1 do
-  begin
-    if (i=j) then continue;
-    if self.liens[i,j] <> '-1' then begin
-       memo1.lines.Add(self.clean_instr('          if '+self.traduit(liens[i,j],'cond')+' then goto clear'+inttostr(j)));
-    end;
-  end;
-  memo1.lines.Add('          goto etape'+inttostr(i));
+self.ComPort1.ReadStr(Str,count);
+form1.Memo2.lines.add(Str);
+//if (str<>'') then self.input:=strtoint(Str);
 end;
-frmProg.SynMemo1.Text:=self.memo1.Text;
-Gnrerunfichierbasic1Click(sender);
+
+procedure TForm1.Timer3Timer(Sender: TObject);
+var s:string;
+begin
+self.ComPort1.WriteStr(inttostr(self.output)+#13#10);
+s:=self.Memo2.Text;
+self.Memo2.Clear;
+s:= Trim(StringReplace(s,#13#10, '', [rfReplaceAll, rfIgnoreCase]));
+if length(s)>0 then self.input:=strtoint(trim(s)) else self.input:=0;
 end;
 
 end.
