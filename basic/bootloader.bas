@@ -1,3 +1,13 @@
+;-----------------------------------------------------------------------------------------------------------------
+;Ce programme est l'oeuvre exclusive de TACK Sébastien, professeur de Technologie aux collège de Verson et Brunet 
+;Merci de maintenir la paternité de cette oeuvre
+;Réalisation Aout 2013
+;
+;-----------------------------------------------------------------------------------------------------------------
+;L'idée est celle-ci l'ordinateur communique avec la carte PICAXE au travers du cable USB de programmation
+;Lorsqu'un ordre est envoyé, le PICAXE execute cet ordre recu en,tre 0 et 255 puis retourne l'état des entrées 
+;par défaut. 
+;
 #no_data
 main:
     ;high B.0
@@ -10,6 +20,9 @@ main:
     
     ;on lit les ordres
     ;envoiyer un chiffre netre 0 et 255
+    ;a faire si 2 carac particulier alors envoyer etat des ADC sinon executer ordre
+    
+    ;recoit un ordre entre 0 et 255 puis actionne les sorties
     serrxd #b0
     let b1 = b0 and $01
     let b2 = b0 and $02
@@ -29,14 +42,12 @@ main:
     if b7 = $40 then high B.6 else low B.6 endif
     if b8 = $80 then high B.7 else low B.7 endif
     
-    
-           
-    ;sertxd ("Output:",#b0," recue",13,10)
-    
+    ;lit l'etat des entrees    
     let b9 = pinsC
-    sertxd (#b9,13,10)
+    
+    sertxd (#b9,"#",13,10)
     
     reconnect
-    pause 10
+    
     goto main 
     

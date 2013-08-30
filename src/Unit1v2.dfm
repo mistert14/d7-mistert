@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 5
-  Top = 128
-  Width = 1200
+  Left = -8
+  Top = -8
+  Width = 1382
   Height = 744
   Caption = 'Simulation d'#39'automatismes M.TACK Ao'#251't 2013'
   Color = clBtnFace
@@ -107,6 +107,8 @@ object Form1: TForm1
       Width = 73
       Height = 49
       TabOrder = 9
+      Visible = False
+      OnChange = Memo2Change
     end
   end
   object flash1: TShockwaveFlash
@@ -129,13 +131,14 @@ object Form1: TForm1
       6C00000008000C000000660061006C00730065000000}
   end
   object Memo1: TMemo
-    Left = 168
-    Top = 392
-    Width = 297
+    Left = 8
+    Top = 280
+    Width = 65
     Height = 249
     Lines.Strings = (
       'Memo1')
     TabOrder = 2
+    Visible = False
   end
   object MainMenu1: TMainMenu
     Left = 72
@@ -257,7 +260,7 @@ object Form1: TForm1
   end
   object Timer3: TTimer
     Enabled = False
-    Interval = 200
+    Interval = 100
     OnTimer = Timer3Timer
     Left = 104
     Top = 72
