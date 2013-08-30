@@ -85,9 +85,11 @@ type
     procedure Gnrerunfichierbasic1Click(Sender: TObject);
     procedure ComPort1RxChar(Sender: TObject; Count: Integer);
     procedure Timer3Timer(Sender: TObject);
+    procedure Memo2Change(Sender: TObject);
   private
     { Déclarations privées }
-    input,output:word;
+
+    input,output:integer;
     pilotage:boolean;
     mini,maxi,frame:integer;
     //tempo:int64;
@@ -312,7 +314,7 @@ end;
 
 function Tform1.equations(eq:string):string;
 var inp,s,add:string;
-kk:integer;
+kk,test:integer;
 begin
 
 
@@ -321,16 +323,17 @@ begin
 
     if self.pilotage=true then
     begin
-    
+    //memo1.Clear;
+     //memo1.lines.add('pilotage');
     for kk:=0 to dico.keys.Count-1 do begin
-       if (dico.keys[kk]='inter') and (self.input and 2 = 2) then inp:='1' else inp:='0';
-       if (dico.keys[kk]='inter1') and (self.input and 64 = 64) then inp:='1' else inp:='0';
-       if (dico.keys[kk]='inter2') and (self.input and 2 = 2) then inp:='1' else inp:='0';
 
-       if pos(dico.Keys[kk],s)<>0  then begin
-           s  := Trim(StringReplace(s,dico.Keys[kk],inp, [rfReplaceAll, rfIgnoreCase]));
-           memo1.Lines.add(dico.Keys[kk]+'='+inp);
-       end;
+
+       if (trim(dico.keys[kk])='inter') and (self.input and 128 =128) then s  := Trim(StringReplace(s,dico.Keys[kk],'1', [rfReplaceAll, rfIgnoreCase]))
+       else if (trim(dico.keys[kk])='inter1') and (self.input and 128 = 128) then s  := Trim(StringReplace(s,dico.Keys[kk],'1', [rfReplaceAll, rfIgnoreCase]))
+       else if (trim(dico.keys[kk])='inter2') and (self.input and 64 = 64) then s  := Trim(StringReplace(s,dico.Keys[kk],'1', [rfReplaceAll, rfIgnoreCase]))
+       else s  := Trim(StringReplace(s,dico.Keys[kk],'0', [rfReplaceAll, rfIgnoreCase]));
+
+
     end;
     end
 
@@ -826,7 +829,6 @@ var str:string;
 begin
 self.ComPort1.ReadStr(Str,count);
 form1.Memo2.lines.add(Str);
-//if (str<>'') then self.input:=strtoint(Str);
 end;
 
 procedure TForm1.Timer3Timer(Sender: TObject);
@@ -836,7 +838,26 @@ self.ComPort1.WriteStr(inttostr(self.output)+#13#10);
 s:=self.Memo2.Text;
 self.Memo2.Clear;
 s:= Trim(StringReplace(s,#13#10, '', [rfReplaceAll, rfIgnoreCase]));
-if length(s)>0 then self.input:=strtoint(trim(s)) else self.input:=0;
+
 end;
 
+procedure TForm1.Memo2Change(Sender: TObject);
+var s:string;
+old:integer;
+begin
+  s:=memo2.text;
+  if pos('#',s)<>0 then
+  begin
+    s  := Trim(StringReplace(s,'#', '', [rfReplaceAll, rfIgnoreCase]));
+    s  := Trim(StringReplace(s,#13#10, '', [rfReplaceAll, rfIgnoreCase]));
+    if (s<>'') then
+    begin
+      old:=self.input;
+      if (strtoint(s)) <> old then begin
+        self.input:=strtoint(s);
+        memo1.lines.Add(s);
+      end;
+    end;
+  end;
+end;
 end.
