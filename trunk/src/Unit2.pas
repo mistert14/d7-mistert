@@ -33,7 +33,7 @@ uses Unit1;
 
 procedure TForm2.Button1Click(Sender: TObject);
 begin
-self.OpenDialog1.InitialDir:=GetCurrentdir;
+self.OpenDialog1.InitialDir:=ExtractFileDir(Application.ExeName)+'\GPH\';
 self.OpenDialog1.FileName:='*.swf';
 self.OpenDialog1.Filter:='*.swf';
 if self.OpenDialog1.Execute then begin
@@ -54,7 +54,7 @@ procedure TForm2.Button2Click(Sender: TObject);
 begin
 form1.flash1.Movie:=self.ShockwaveFlash1.movie;
 flash:= self.ShockwaveFlash1.movie;
-flash  := Trim(StringReplace(flash,GetCurrentDir+'\', '', [rfReplaceAll, rfIgnoreCase]));
+flash  := Trim(StringReplace(flash,ExtractFileDir(Application.ExeName)+'\', '', [rfReplaceAll, rfIgnoreCase]));
 //form1.Caption:=flash;
 form1.flash1.Loop:=false;
 form1.flash1.Enabled:=true;
