@@ -599,7 +599,7 @@ begin
 timer1.Enabled:=false;
 dico.fElems.Clear;
 self.fscmd.Clear;
-self.OpenDialog1.InitialDir:=GetCurrentDir()+'\GPH\';
+self.OpenDialog1.InitialDir:=ExtractFileDir(Application.ExeName)+'\GPH\';
 self.OpenDialog1.FileName:='*.GPH';
 self.OpenDialog1.Filter:='*.GPH';
 if self.OpenDialog1.Execute then begin
@@ -652,7 +652,7 @@ if self.OpenDialog1.Execute then begin
    flash:=s;
 
    if flash<>'' then begin
-      self.flash1.movie:=GetCurrentDir+chr(92)+s;
+      self.flash1.movie:=ExtractFileDir(Application.ExeName)+'\GPH\'+s;
       self.flash1.Visible:=true;
       self.flash1.Loop:=false;
       //self.TrackBar1.Max:=self.flash1.TotalFrames-1;
@@ -668,7 +668,7 @@ end;
 
 procedure TForm1.Enregistrersous1Click(Sender: TObject);
 begin
-  self.SaveDialog1.InitialDir:=GetCurrentdir+'\GPH\';
+  self.SaveDialog1.InitialDir:=ExtractFileDir(Application.ExeName)+'\GPH\';
   self.SaveDialog1.FileName:='*.GPH';
   self.SaveDialog1.Filter:='*.GPH';
   if self.SaveDialog1.Execute then begin
