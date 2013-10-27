@@ -86,6 +86,7 @@ type
     procedure ComPort1RxChar(Sender: TObject; Count: Integer);
     procedure Timer3Timer(Sender: TObject);
     procedure Memo2Change(Sender: TObject);
+    procedure ChoisirlePICAXEcible1Click(Sender: TObject);
   private
     { Déclarations privées }
 
@@ -214,13 +215,15 @@ if pos('FONCTION',uppercase(flash)) <> 0  then begin
          self.flash1.setVariable('Lampe','1');
          self.flash1.Play;
 
-         if (self.pilotage=true) then self.output:=self.output or $01;
+         if (self.picaxe='18M2') and(self.pilotage=true) then self.output:=self.output or $01;
+         if (self.picaxe='08M2') and(self.pilotage=true) then self.output:=self.output or $02;
 
 
       end else begin
             self.flash1.setVariable('Lampe','0');
             self.flash1.Play;
-            if (self.pilotage=true) then self.output:=self.output and $FE;
+            if (self.picaxe='18M2') and (self.pilotage=true) then self.output:=self.output and $FE;
+            if (self.picaxe='08M2') and (self.pilotage=true) then self.output:=self.output and $FD;
 
          end;
 
@@ -290,7 +293,7 @@ ordre:longword;
 begin
 s:=uppercase(instr);
 
-if (mode='cond') then begin
+if (mode='cond') and (self.picaxe='18M2') then begin
 s  := Trim(StringReplace(s,'.', ' and ', [rfReplaceAll, rfIgnoreCase]));
 s  := Trim(StringReplace(s,'+', ' or ', [rfReplaceAll, rfIgnoreCase]));
 s  := Trim(StringReplace(s,'/INTER1', 'pinC.7=0', [rfReplaceAll]));
@@ -303,8 +306,27 @@ result:=s;
 exit;
 end;
 
+if (mode='cond') and (self.picaxe='08M2') then begin
+s  := Trim(StringReplace(s,'.', ' and ', [rfReplaceAll, rfIgnoreCase]));
+s  := Trim(StringReplace(s,'+', ' or ', [rfReplaceAll, rfIgnoreCase]));
+s  := Trim(StringReplace(s,'/INTER1', 'pin4=0', [rfReplaceAll]));
+s  := Trim(StringReplace(s,'/INTER2', 'pin3=0', [rfReplaceAll]));
+s  := Trim(StringReplace(s,'INTER1', 'pin4=1', [rfReplaceAll]));
+s  := Trim(StringReplace(s,'INTER2', 'pin3=1', [rfReplaceAll]));
+s  := Trim(StringReplace(s,'/INTER', 'pin4=0', [rfReplaceAll, rfIgnoreCase]));
+s  := Trim(StringReplace(s,'INTER', 'pin4=1', [rfReplaceAll, rfIgnoreCase]));
+result:=s;
+exit;
+end;
+
 ordre:=0;
-if ((mode='ordre') and self.pilotage=true) then begin
+if ((mode='ordre') and (self.pilotage=true) and (self.picaxe='18M2')) then begin
+  if pos('ALLUMER',s) <>0 then  ordre:= ordre and $01;
+  self.ComPort1.WriteStr(inttostr(ordre));
+  result:='1';
+end;
+
+if ((mode='ordre') and (self.pilotage=true) and (self.picaxe='08M2')) then begin
   if pos('ALLUMER',s) <>0 then  ordre:= ordre and $01;
   self.ComPort1.WriteStr(inttostr(ordre));
   result:='1';
@@ -327,12 +349,23 @@ begin
      //memo1.lines.add('pilotage');
     for kk:=0 to dico.keys.Count-1 do begin
 
+      if self.picaxe='18M2' then begin
 
        if (trim(dico.keys[kk])='inter') and (self.input and 128 =128) then s  := Trim(StringReplace(s,dico.Keys[kk],'1', [rfReplaceAll, rfIgnoreCase]))
        else if (trim(dico.keys[kk])='inter1') and (self.input and 128 = 128) then s  := Trim(StringReplace(s,dico.Keys[kk],'1', [rfReplaceAll, rfIgnoreCase]))
        else if (trim(dico.keys[kk])='inter2') and (self.input and 64 = 64) then s  := Trim(StringReplace(s,dico.Keys[kk],'1', [rfReplaceAll, rfIgnoreCase]))
        else s  := Trim(StringReplace(s,dico.Keys[kk],'0', [rfReplaceAll, rfIgnoreCase]));
 
+       end;
+
+        if self.picaxe='08M2' then begin
+
+       if (trim(dico.keys[kk])='inter') and (self.input and 16 =16) then s  := Trim(StringReplace(s,dico.Keys[kk],'1', [rfReplaceAll, rfIgnoreCase]))
+       else if (trim(dico.keys[kk])='inter1') and (self.input and 16 = 16) then s  := Trim(StringReplace(s,dico.Keys[kk],'1', [rfReplaceAll, rfIgnoreCase]))
+       else if (trim(dico.keys[kk])='inter2') and (self.input and 8 = 8) then s  := Trim(StringReplace(s,dico.Keys[kk],'1', [rfReplaceAll, rfIgnoreCase]))
+       else s  := Trim(StringReplace(s,dico.Keys[kk],'0', [rfReplaceAll, rfIgnoreCase]));
+
+       end;
 
     end;
     end
@@ -488,7 +521,7 @@ procedure TForm1.FormCreate(Sender: TObject);
 var i,j:integer;
 begin
 self.pilotage:=false;
-form1.picaxe:='18m2';
+form1.picaxe:='08M2';
 self.comp_count:=self.ComponentCount;
 for i:=0 to self.comp_count do
 for j:=0 to self.comp_count do
@@ -751,7 +784,6 @@ end;
 procedure TForm1.Timer2Timer(Sender: TObject);
 begin
 redraw;
-
 end;
 
 procedure TForm1.Associeruneanimationflash1Click(Sender: TObject);
@@ -838,7 +870,6 @@ self.ComPort1.WriteStr(inttostr(self.output)+#13#10);
 s:=self.Memo2.Text;
 self.Memo2.Clear;
 s:= Trim(StringReplace(s,#13#10, '', [rfReplaceAll, rfIgnoreCase]));
-
 end;
 
 procedure TForm1.Memo2Change(Sender: TObject);
@@ -860,4 +891,9 @@ begin
     end;
   end;
 end;
+procedure TForm1.ChoisirlePICAXEcible1Click(Sender: TObject);
+begin
+self.picaxe := InputBox('PICAXE cible', '08M2 ou 18M2 pour le picaxe', self.picaxe);
+end;
+
 end.

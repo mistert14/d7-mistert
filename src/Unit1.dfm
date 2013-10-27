@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 5
-  Top = 128
+  Left = 97
+  Top = 108
   Width = 1200
   Height = 744
   Caption = 'Simulation d'#39'automatismes M.TACK Ao'#251't 2013'

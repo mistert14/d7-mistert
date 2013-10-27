@@ -18,7 +18,7 @@ object Form4: TForm4
   object Label1: TLabel
     Left = 8
     Top = 96
-    Width = 253
+    Width = 321
     Height = 13
     Alignment = taCenter
     Caption = 'Double cliquez sur un '#233'lement pour afficher les d'#233'tails'
