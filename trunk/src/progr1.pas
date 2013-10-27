@@ -87,7 +87,7 @@ begin
  savefile(ExtractFileDir(Application.ExeName)+'\basic\prog.bas');
  memo1.lines.Clear;
  self.Button2.Enabled:=false;
- //form1.caption:=ExtractFileDir(Application.ExeName)+'\basic\prog.bas';
+ form1.caption:=ExtractFileDir(Application.ExeName)+'\basic\prog.bas';
  epcWindows.CallCmd(
     ExtractFileDir(Application.ExeName)+'\picaxe\',
     'picaxe18m2.exe',

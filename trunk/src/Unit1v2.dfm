@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = -8
-  Top = -8
-  Width = 1382
+  Left = 60
+  Top = 118
+  Width = 1378
   Height = 744
   Caption = 'Simulation d'#39'automatismes M.TACK Ao'#251't 2013'
   Color = clBtnFace
@@ -215,6 +215,7 @@ object Form1: TForm1
       end
       object ChoisirlePICAXEcible1: TMenuItem
         Caption = '&Choisir le PICAXE cible'
+        OnClick = ChoisirlePICAXEcible1Click
       end
     end
   end
